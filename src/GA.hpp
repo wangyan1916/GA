@@ -31,6 +31,7 @@ namespace GA
     class GA1
     {
     private:
+    protected:
         population pop;
         size_t popSize;
         uint maxGen;
@@ -39,16 +40,20 @@ namespace GA
         std::vector<std::vector<double>> boundaryList;
         population crossOver();
         population mutate();
-        double (*func)(Individual);
+        double (*func)(Individual); // 用于存储适应度函数的指针
+        population (*updatePop)(population& pop, size_t size_); // 用于存储更新种群的函数的指针
         static double calculateFitness(population& pop_);
-        population roulette(population& pop_) const;    //轮盘赌选择
 
     public:
         GA1(size_t popSize_ = 100, uint maxGen_ = 50, double crossRate_ = 0.3, double mutateRate_ = 0.3);
         void init(const std::vector<std::vector<double>>& boundaryList_, double(*func_)(Individual));   // 使用边界列表初始化种群
+        Individual generate(population (updatePop_)(population& pop, size_t size));
+        static population roulette(population& pop_, size_t size_) ;    //轮盘赌选择
+    };
+    class NSGA2 : GA1
+    {
+    public:
         Individual generate();
-
-
     };
 
 }

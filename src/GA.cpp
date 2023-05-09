@@ -115,7 +115,7 @@ GA::population GA::GA1::mutate() {
 }
 
 
-GA::Individual GA::GA1::generate() {
+GA::Individual GA::GA1::generate(population (updatePop_)(population& pop, size_t size)) {
     uint i = 0;
     population subOfC;
     population subOfM;
@@ -127,7 +127,7 @@ GA::Individual GA::GA1::generate() {
         std::copy(pop.begin(), pop.end(), std::back_inserter(newPop));
         std::copy(subOfC.begin(), subOfC.end(), std::back_inserter(newPop));
         std::copy(subOfM.begin(), subOfM.end(), std::back_inserter(newPop));
-        pop = roulette(newPop);
+        pop = updatePop_(newPop, popSize);
     }
     Individual best = *pop.begin();
     for (const auto& ind: pop)
@@ -138,7 +138,7 @@ GA::Individual GA::GA1::generate() {
     return best;
 }
 
-GA::population GA::GA1::roulette(GA::population& pop_) const {
+GA::population GA::GA1::roulette(GA::population& pop_, size_t size)  {
     // 首先计算所有个体的适应度函数 并求和
     double fitnessSum = calculateFitness(pop_);
     std::vector<double> probabilities;
@@ -160,7 +160,7 @@ GA::population GA::GA1::roulette(GA::population& pop_) const {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution dist(0.0, 1.0);
-    for (uint i = 0; i < popSize; ++i) {
+    for (uint i = 0; i < size; ++i) {
         double r = dist(gen);
         auto it = std::lower_bound(wheel.begin(), wheel.end(), r);
         subPop.emplace_back(pop_.at(std::distance(wheel.begin(), it)));
@@ -195,4 +195,8 @@ double GA::Fitness::minus(double a, double b) {
 
 double GA::Fitness::boxMinus(GA::Individual individual_) {
     return(minus(individual_.chromosome.at(0), individual_.chromosome.at(1)));
+}
+
+GA::Individual GA::NSGA2::generate() {
+    return pop.back();
 }

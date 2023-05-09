@@ -5,7 +5,7 @@ int main() {
     boundaryList = {{0,100}, {0,10}};
     GA::GA1 ga(100, 50, 0.6,0.02);
     ga.init(boundaryList, GA::Fitness::boxMinus);
-    GA::Individual rel = ga.generate();
+    GA::Individual rel = ga.generate(GA::GA1::roulette);
 
     std::cout << rel.fitness<< std::endl;
     std::cout << rel.chromosome.at(0)<< std::endl;
