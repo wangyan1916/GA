@@ -13,15 +13,21 @@ namespace GA
     using uint = unsigned int;
     struct Individual
     {
-
+        double (*func)(Individual);
         std::vector<double> chromosome;
         double fitness;
-        explicit Individual(const std::vector<std::vector<double>>& boundaryList_);
+        explicit Individual(const std::vector<std::vector<double>>& boundaryList_, double (*func_)(Individual));
         void getFitness();
-
     };
     using population = std::vector<Individual>;
-
+    class Fitness
+    {
+        static double add(double a, double b);
+        static double minus(double a, double b);
+    public:
+        static double boxAdd(Individual individual_);
+        static double boxMinus(Individual individual_);
+    };
     class GA1
     {
     private:
@@ -33,13 +39,15 @@ namespace GA
         std::vector<std::vector<double>> boundaryList;
         population crossOver();
         population mutate();
+        double (*func)(Individual);
         static double calculateFitness(population& pop_);
         population roulette(population& pop_) const;    //轮盘赌选择
 
     public:
         GA1(size_t popSize_ = 100, uint maxGen_ = 50, double crossRate_ = 0.3, double mutateRate_ = 0.3);
-        void init(const std::vector<std::vector<double>>& boundaryList_);   // 使用边界列表初始化种群
+        void init(const std::vector<std::vector<double>>& boundaryList_, double(*func_)(Individual));   // 使用边界列表初始化种群
         Individual generate();
+
 
     };
 

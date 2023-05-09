@@ -5,7 +5,7 @@
 #include <random>
 #include "GA.hpp"
 
-GA::Individual::Individual(const std::vector<std::vector<double>> &boundaryList_) {
+GA::Individual::Individual(const std::vector<std::vector<double>> &boundaryList_, double (*func_)(Individual)) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -14,10 +14,15 @@ GA::Individual::Individual(const std::vector<std::vector<double>> &boundaryList_
         chromosome.push_back(bound.at(0) + (bound.at(1) - bound.at(0))*dis(gen));
         fitness = 0;
 
+    func = func_;
 }
 
+
+
+
 void GA::Individual::getFitness() {
-    fitness = chromosome.at(0) + chromosome.at(1);
+    //fitness = chromosome.at(0) + chromosome.at(1);
+    fitness = func(*this);
 
 }
 
@@ -26,12 +31,12 @@ GA::GA1::GA1(size_t popSize_, GA::uint maxGen_, double crossRate_, double mutate
     {
 }
 
-void GA::GA1::init(const std::vector<std::vector<double>>& boundaryList_) {
+void GA::GA1::init(const std::vector<std::vector<double>>& boundaryList_, double (*func_)(Individual)) {
    boundaryList = boundaryList_;
    uint i = 0;
    while (i < popSize)
    {
-       pop.emplace_back(boundaryList_);
+       pop.emplace_back(boundaryList_, func_);
        i++;
    }
 
@@ -167,9 +172,27 @@ double GA::GA1::calculateFitness(population& pop_) {
     double sum = 0.0;
     for (auto &ind: pop_)
     {
+
         ind.getFitness();
         sum += ind.fitness;
     }
     return sum;
 }
 
+
+double GA::Fitness::add(double a, double b) {
+
+    return a + b;
+}
+
+double GA::Fitness::boxAdd(GA::Individual individual_) {
+    return add(individual_.chromosome.at(0), individual_.chromosome.at(1));
+}
+
+double GA::Fitness::minus(double a, double b) {
+    return a - b;
+}
+
+double GA::Fitness::boxMinus(GA::Individual individual_) {
+    return(minus(individual_.chromosome.at(0), individual_.chromosome.at(1)));
+}
