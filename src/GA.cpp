@@ -5,38 +5,36 @@
 #include <random>
 #include "GA.hpp"
 
-GA::Individual::Individual(const std::vector<std::vector<double>> &boundaryList_, double (*func_)(Individual)) {
+GA::Individual::Individual(const std::vector<std::vector<double>> &boundaryList_, Help* help_) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
     std::uniform_real_distribution<double> dis(0.0, 1.0);
     for (auto bound: boundaryList_)
         chromosome.push_back(bound.at(0) + (bound.at(1) - bound.at(0))*dis(gen));
-        fitness = 0;
 
-    func = func_;
+    rank = 0;
+    fitness.clear();
+    help = help_;
+
 }
-
-
-
-
 void GA::Individual::getFitness() {
-    //fitness = chromosome.at(0) + chromosome.at(1);
-    fitness = func(*this);
+    help->fitness(*this, help->ships);
 
 }
 
 GA::GA1::GA1(size_t popSize_, GA::uint maxGen_, double crossRate_, double mutateRate_)
     :popSize(popSize_), maxGen(maxGen_), crossRate(crossRate_), mutateRate(mutateRate_)
     {
+    outPut = outPutBestFitness;
 }
 
-void GA::GA1::init(const std::vector<std::vector<double>>& boundaryList_, double (*func_)(Individual)) {
+void GA::GA1::init(const std::vector<std::vector<double>>& boundaryList_, Help* help_) {
    boundaryList = boundaryList_;
    uint i = 0;
    while (i < popSize)
    {
-       pop.emplace_back(boundaryList_, func_);
+       pop.emplace_back(boundaryList_, help_);
        i++;
    }
 
@@ -127,15 +125,10 @@ GA::Individual GA::GA1::generate(population (updatePop_)(population& pop, size_t
         std::copy(pop.begin(), pop.end(), std::back_inserter(newPop));
         std::copy(subOfC.begin(), subOfC.end(), std::back_inserter(newPop));
         std::copy(subOfM.begin(), subOfM.end(), std::back_inserter(newPop));
-        pop = updatePop_(newPop, popSize);
+        pop = updatePop_(newPop, popSize);  // 更新子代
     }
-    Individual best = *pop.begin();
-    for (const auto& ind: pop)
-    {
-        if (ind.fitness > best.fitness)
-            best = ind;
-    }
-    return best;
+
+    return outPut(pop);
 }
 
 GA::population GA::GA1::roulette(GA::population& pop_, size_t size)  {
@@ -145,7 +138,7 @@ GA::population GA::GA1::roulette(GA::population& pop_, size_t size)  {
     // 归一化概率分布
     for(const auto& ind: pop_)
     {
-        probabilities.push_back(ind.fitness/fitnessSum);
+        probabilities.push_back(ind.rank/fitnessSum);
     }
     // 构建轮盘
     std::vector<double> wheel;
@@ -174,29 +167,45 @@ double GA::GA1::calculateFitness(population& pop_) {
     {
 
         ind.getFitness();
-        sum += ind.fitness;
+        ind.rank = std::accumulate(ind.fitness.begin(), ind.fitness.end(), 0.0);
+        sum += ind.rank;
     }
     return sum;
 }
 
+GA::Individual GA::GA1::outPutBestFitness(GA::population &pop_) {
+    Individual best = *pop_.begin();
+    for (const auto& ind: pop_)
+    {
+        if (ind.rank > best.rank)
+            best = ind;
+    }
+    return best;
 
-double GA::Fitness::add(double a, double b) {
-
-    return a + b;
 }
 
-double GA::Fitness::boxAdd(GA::Individual individual_) {
-    return add(individual_.chromosome.at(0), individual_.chromosome.at(1));
-}
+void GA::GA1::setOutput(GA::Individual (*outPut_)(population &)) {
+    outPut = outPut_;
 
-double GA::Fitness::minus(double a, double b) {
-    return a - b;
-}
-
-double GA::Fitness::boxMinus(GA::Individual individual_) {
-    return(minus(individual_.chromosome.at(0), individual_.chromosome.at(1)));
 }
 
 GA::Individual GA::NSGA2::generate() {
     return pop.back();
+}
+
+GA::Help::Help(GA::helpClass ships_) {
+    ships = ships_;
+}
+
+void GA::Help::demoAdd(GA::Individual &individual_, helpClass ships_) {
+
+    ships_->shipsInfo.at(0).getLat();
+    individual_.fitness = {individual_.chromosome.at(0), individual_.chromosome.at(1)};
+
+
+}
+
+void GA::Help::setFitFun(void (*fitness_)(Individual &, helpClass)) {
+    fitness = fitness_;
+
 }
