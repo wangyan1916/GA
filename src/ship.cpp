@@ -5,8 +5,10 @@
 #include "ship.hpp"
 #include <algorithm>
 #include <cmath>
+#include "GA.hpp"
+#include "Risk.hpp"
 
-Ship::Ships::Ships(const std::vector<std::vector<double>>& shipsInfo_) {
+Ship::Ships::Ships(const std::vector<std::vector<double>>& shipsInfo_, std::vector<double> riskTH_) {
     // 先计算基准
     std::vector<double> lat, lon;
     for (auto shipInfo_: shipsInfo_)
@@ -27,12 +29,34 @@ Ship::Ships::Ships(const std::vector<std::vector<double>>& shipsInfo_) {
     proj = new Projection(refer);
 
     // 初始化船舶
-    for(auto shipInfo_: shipsInfo_)
+    for(const auto& shipInfo_: shipsInfo_)
     {
         shipsInfo.emplace_back(shipInfo_, proj);
     }
+    riskTH = std::move(riskTH_);
 
 }
+
+void Ship::Ships::fitness(GA::Individual &individual_, GA::helpClass ships_) {
+    std::vector<double> fitness;
+    std::vector<std::vector<double>> test = Risk::CPA::getCPAShip(ships_->shipsInfo.at(0), shipSet (ships_->shipsInfo.begin()+1, ships_->shipsInfo.end()));
+    std::vector<std::vector<double>> test2 = Risk::CPA::getCPAShip(ships_->shipsInfo.at(0), shipSet (ships_->shipsInfo.begin()+1, ships_->shipsInfo.end()));
+    std::vector<std::vector<double>> test3 = Risk::CPA::getCPAShip(ships_->shipsInfo.at(0), shipSet (ships_->shipsInfo.begin()+1, ships_->shipsInfo.end()));
+
+    shipSet shipI = ships_->shipsInfo;
+
+    double dist1 = sqrt(pow((shipI.at(0).getX() - shipI.at(1).getX()),2) + pow((shipI.at(0).getY() - shipI.at(1).getY()), 2));
+    double dist2 = sqrt(pow((shipI.at(0).getX() - shipI.at(2).getX()),2) + pow((shipI.at(0).getY() - shipI.at(2).getY()), 2));
+    double dist3 = sqrt(pow((shipI.at(0).getX() - shipI.at(3).getX()),2) + pow((shipI.at(0).getY() - shipI.at(3).getY()), 2));
+    double all = dist1 + dist2 + dist3;
+    // 对染色体进行解析，获得准确的位置和航向
+    // Risk::CPA::getCPAShip()
+    fitness = test.at(0);
+    fitness.push_back(all);
+    individual_.fitness = fitness;
+
+}
+
 
 Ship::Ship::Ship(std::vector<double> shipInfo, Projection* proj_) {
     proj = proj_;
@@ -123,5 +147,13 @@ void Ship::Ship::setms(double ms_) {
 void Ship::Ship::setRadP(double radP_) {
     radP = radP_;
     phi = radP/M_PI*180;
+}
+
+double Ship::Ship::getX() {
+    return x;
+}
+
+double Ship::Ship::getY() {
+    return y;
 }
 

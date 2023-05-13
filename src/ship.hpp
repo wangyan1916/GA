@@ -7,6 +7,13 @@
 
 #include <vector>
 #include "Projection.hpp"
+namespace Ship{
+    class Ships;
+}
+namespace GA {
+    struct Individual;
+    using helpClass = Ship::Ships*;
+}
 namespace Ship {
     struct Ship {
     private:
@@ -37,6 +44,9 @@ namespace Ship {
         double getms() const;
         double getRadP() const;
 
+        double getX();
+        double getY();
+
         void setLat(double lat_);
         void setLon(double lon_);
         void setCor(double cor_);
@@ -48,19 +58,29 @@ namespace Ship {
     };
 
     using shipSet = std::vector<Ship>;
-
     class Ships
     {
     private:
         std::vector<double> refer;
 
-
+        Projection *proj;   // 用于坐标间转换
+        std::vector<double> riskTH;
 
     public:
-        Ships(const std::vector<std::vector<double>>& shipsInfo_);
-        Projection *proj;   // 用于坐标间转换
+        /**
+         * @brief 初始化Ships类
+         * @param shipsInfo_ 船舶信息，包括我船和他船
+         * @param riskTH_  阈值{DVOI TVOI} 单位分别为米和秒
+         */
+        explicit Ships(const std::vector<std::vector<double>>& shipsInfo_, std::vector<double> riskTH_);
+        static void fitness(GA::Individual& individual_, GA::helpClass ships_);
         shipSet shipsInfo ;
+        int zero = 0;
+
     };
 
+
 }
+
+using helpClass = Ship::Ships*;
 #endif //GA_SHIP_HPP

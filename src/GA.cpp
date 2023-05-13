@@ -19,7 +19,7 @@ GA::Individual::Individual(const std::vector<std::vector<double>> &boundaryList_
 
 }
 void GA::Individual::getFitness() {
-    help->fitness(*this, help->ships);
+    help->fitness(*this, help->theHelpClass);
 
 }
 
@@ -189,18 +189,15 @@ void GA::GA1::setOutput(GA::Individual (*outPut_)(population &)) {
 
 }
 
-GA::Individual GA::NSGA2::generate() {
-    return pop.back();
+
+GA::Help::Help(GA::helpClass helpClass_) {
+    theHelpClass = helpClass_;
+    fitness = demoAdd;
 }
 
-GA::Help::Help(GA::helpClass ships_) {
-    ships = ships_;
-}
+void GA::Help::demoAdd(GA::Individual &individual_, helpClass helpClass_) {
 
-void GA::Help::demoAdd(GA::Individual &individual_, helpClass ships_) {
-
-    ships_->shipsInfo.at(0).getLat();
-    individual_.fitness = {individual_.chromosome.at(0), individual_.chromosome.at(1)};
+    individual_.fitness = {individual_.chromosome.at(0) + helpClass_->zero, individual_.chromosome.at(1)};
 
 
 }

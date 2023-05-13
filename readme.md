@@ -1,4 +1,37 @@
+
+
+[toc]
+
+## 程序运行逻辑
+
+```mermaid
+graph TD
+
+ga1[GA1 遗传算法类]
+ga1out[GA1 的初始化方法]
+bound[boundaryList 初始化种群的边界]
+help[辅助类help 内含具体问题的适应度计算方法]
+output[output,输出最终解方法]
+generate[generate方法,决定了哪种GA]
+update[updatePop,子代种群更新方法]
+risk[Risk类,包含CPA计算方法]
+ga1 --> ga1out
+ga1 --> output
+ga1 --> generate
+generate --> update
+ga1out --> bound
+ga1out --> help
+help --> risk
+```
+
+
+
+
+
+
+
 ## GA基本流程
+
 - 初始化种群
 - 评估适应度函数
 - 在达到结束条件之前
@@ -49,3 +82,7 @@
 - 
 ### 帕累托选择和拥挤度的设计
 - 
+
+## Risk 类设计思路
+
+直接设计成静态的

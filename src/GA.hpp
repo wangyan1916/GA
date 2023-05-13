@@ -11,8 +11,7 @@
 namespace GA
 {
     // 预先声明个体类，后面有正式的声明和实现
-    class Individual;
-    class Fitness;
+    struct Individual;
     using uint = unsigned int;
     // 辅助函数，用于帮助GA算法计算适应度函数
     // 这里初始化引入的类可以根据实际情况做调整
@@ -20,11 +19,15 @@ namespace GA
     class Help
     {
     public:
-        helpClass ships;
-        explicit Help(helpClass ships_);
-        static void demoAdd(Individual& individual_, helpClass ships_);
-        void (*fitness)(Individual&, helpClass);
-        void setFitFun(void fitness_(Individual&, helpClass));
+        helpClass theHelpClass;
+        /**
+         * @brief Help构建函数
+         * @param theHelpClass 通过在GA中修改helpClass指向的类型，使用help调用不同类型的类
+         */
+        explicit Help(helpClass theHelpClass);
+        static void demoAdd(Individual& individual_, helpClass helpClass_);
+        void (*fitness)(Individual&, GA::helpClass);
+        void setFitFun(void fitness_(Individual&, helpClass ships_));
 
     };
     // 个体类
@@ -53,7 +56,6 @@ namespace GA
         std::vector<std::vector<double>> boundaryList;
         population crossOver();
         population mutate();
-        population (*updatePop)(population& pop, size_t size_); // 用于存储更新种群的函数的指针
         Individual (*outPut)(population& pop);  // 根据最终结果输出最佳值
         static double calculateFitness(population& pop_);
 
@@ -67,11 +69,6 @@ namespace GA
         static population roulette(population& pop_, size_t size_) ;    //轮盘赌选择
             // 示例输出最佳值方法——适应度函数最佳
         static Individual outPutBestFitness(population& pop_);
-    };
-    class NSGA2 : GA1
-    {
-    public:
-        Individual generate();
     };
 
 }
